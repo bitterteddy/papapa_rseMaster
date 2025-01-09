@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link rel="stylesheet" href="/papaparse_dir/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Task Manager</h1>
+        
+        <form id="task-form">
+            <label for="task-type">Task Type:</label>
+            <select id="task-type" name="task_type" onchange="showFieldsByType()">
+                <option value="">-- Select Task Type --</option>
+                <option value="parse">CSS Selector Parsing</option>
+                <option value="regex_parse">Regex Parsing</option>
+            </select>
+
+            <div id="general-fields">
+                <label for="urls">URLs (comma-separated):</label>
+                <input type="text" id="urls" name="urls" placeholder="https://example.com, https://example.org" required>
+            </div>
+
+            <div id="css-fields" class="hidden">
+                <label for="container-selector">Container Selector:</label>
+                <input type="text" id="container-selector" name="container_selector" placeholder=".container">
+
+                <h3>Elements to Parse</h3>
+                <div id="parameters-container">
+                    <div class="parameter-group">
+                        <label>Name:</label>
+                        <input type="text" name="name" placeholder="Name">
+                        
+                        <label>Selector:</label>
+                        <input type="text" name="selector" placeholder="CSS Selector">
+                        
+                        <label>Attribute:</label>
+                        <select name="attribute">
+                            <option value="text">Text</option>
+                            <option value="href">Href</option>
+                            <option value="src">Src</option>
+                            <option value="alt">Alt</option>
+                            <option value="title">Title</option>
+                            <option value="id">ID</option>
+                            <option value="class">Class</option>
+                            <option value="">None</option>
+                        </select>
+
+                        <label>Multiple:</label>
+                        <input type="checkbox" name="multiple">
+                    </div>
+                </div>
+                <button type="button" id="add-parameter" onclick="addCSSField()">Add Element</button>
+            </div>
+
+            <div id="regex-fields" class="hidden">
+                <h3>Regex Patterns</h3>
+                <div id="regex-patterns">
+                    <div>
+                        <input type="text" placeholder="Enter regex pattern" name="regex_pattern">
+                    </div>
+                </div>
+                <button type="button" onclick="addRegexPattern()">Add Regex Pattern</button>
+            </div>
+
+            <button type="button" onclick="submitTask()">Create Task</button>
+        </form>
+
+        <h2>Tasks</h2>
+        <ul id="tasks-list"></ul>
+
+        <div id="task-details" style="display: none;">
+            <h3>Task Details</h3>
+            <pre id="task-details-content"></pre>
+            <button id="close-details">Close</button>
+        </div>
+    </div>
+
+    <script src="/papaparse_dir/js/scripts.js"></script>
+</body>
+</html>
