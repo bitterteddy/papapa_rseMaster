@@ -4,65 +4,16 @@ from parser_methods.soup_parser import SoupParser
 from parser_methods.regex_parser import RegexParser
 from concurrent.futures import ThreadPoolExecutor
 import threading
-from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
-import sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Table, Column, Integer, String, Float
-import sqlite3
 import os
+from sqlalchemy.exc import SQLAlchemyError
+from database import initialization, create_results_table, insert_parsing_results
 
 app = Flask(__name__, static_folder="papaparse_dir", template_folder="papaparse_dir")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dynamic_parsing.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-basedir = os.path.abspath("papaparse_dir")
-app.config["SQLALCHEMY_DATABASE_URI"] = 'sqlite:///' + os.path.join(basedir, 'task_res.db')
-db = SQLAlchemy(app)
-ma = Marshmallow(app)
-                 
-CREATE_DB = True
+initialization(app)
 
-# Declare model
-class Result(db.Model):
-    __tablename__ = 'result_table'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    text = db.Column(db.String)
-    tags = db.Column(db.String, nullable=True)
-
-    def __init__(self, name, text, tags) -> None:
-        super(Result, self).__init__()
-        self.name = name
-        self.text = text
-        self.tags = tags
-
-    def __repr__(self) -> str:
-        return '<Question %r>' % self.name
-
-# Schema
-class ResultSchema(ma.Schema):
-    class Meta:
-        fields = ('id', 'name', 'text', 'tags')
-
-multiple_vol_data_schema = ResultSchema(many=True)
-
-def save_results(results):
-    with app.app_context():
-        Session = sessionmaker(bind=db.engine)
-        session = Session()
-        for el in results:
-            #add some psrsing logic
-            r = Result("", "", "")
-            try:
-                session.add(r)
-                session.commit()
-            except:
-                print('Unable to add ' + r.name + ' to db.')
-                continue
-        session.close()
-
-if CREATE_DB:
-    with app.app_context():
-        db.create_all();
 
 tasks = {}
 task_id_counter = 1
@@ -156,6 +107,30 @@ def get_task(task_id):
 def get_all_tasks():
     return jsonify({task_id: task.to_dict() for task_id, task in tasks.items()})
 
+@app.route('/parse_and_store', methods=['POST'])
+def parse_and_store():
+    """
+    Эндпоинт для выполнения парсинга и создания таблицы с результатами.
+    """
+    data = request.json
+
+    table_name = f"parsed_results_{data.get('task_id')}"
+    elements = data.get("parameters", {}).get("elements", [])
+    results = data.get("results", [])
+
+    if not elements or not results:
+        return jsonify({"error": "Invalid input. 'elements' and 'results' are required."}), 400
+
+    try:
+        # Создаем таблицу
+        create_results_table(table_name, elements)
+
+        # Записываем результаты
+        insert_parsing_results(table_name, results)
+
+        return jsonify({"message": f"Results stored in table '{table_name}'"}), 201
+    except SQLAlchemyError as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
