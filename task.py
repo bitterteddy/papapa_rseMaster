@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
 class Task:
-    def __init__(self, task_id: str, task_type: str, parameters: Dict[str, Any]):
+    def __init__(self, task_id: int, task_type: str, parameters: Dict[str, Any]):
         self.task_id = task_id
         self.status = "waiting to create..."
         self.type = task_type

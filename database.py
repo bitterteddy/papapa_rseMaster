@@ -1,16 +1,27 @@
 
-from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData
+from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
 from flask_sqlalchemy import SQLAlchemy
+import json
+from task import Task
 
 db = SQLAlchemy()
 metadata = MetaData()
 
-class User(db.Model):
+class Base(DeclarativeBase):
+    pass
+
+class User(db.Model, Base):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(120), nullable=False)
+    tasks: Mapped[list["TaskModel"]] = relationship(
+        "TaskModel",
+        back_populates="user",
+        cascade="all, delete",
+    )
     
     def __init__(self, name, mail, pswrd) -> None:
         self.username = name
@@ -19,6 +30,39 @@ class User(db.Model):
     
     def __repr__(self) -> str:
         return '<User %r>' % self.name
+
+class TaskModel(db.Model, Base):
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True)
+    status = db.Column(db.String(120), nullable=False)
+    task_type = db.Column(db.String(120), nullable=False)
+    parameters = db.Column(db.Text, nullable=False)
+    error_message = db.Column(db.Text, nullable=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id"),
+    )
+    user: Mapped[User] = relationship(
+        "User",
+        back_populates="tasks",
+    )
+    
+    def __init__(self, task_id: int, user: User, status: str, task_type: str, parameters: str, err_msg: str = "") -> None:
+        self.id = task_id
+        self.status = status
+        self.task_type = task_type
+        self.parameters = parameters
+        self.error_message = err_msg
+        self.user_id = user.id
+        self.user = user
+    
+    @classmethod
+    def from_task_and_user(cls, task:Task, user:User):
+        pars = json.dumps(task.parameters)
+        return cls(task.task_id, user, task.status, task.type, pars, task.error_message)
+    
+    def __repr__(self) -> str:
+        return '<Task %r>' % self.id
  
 def create_standart_tables():
     metadata.create_all(bind=db.engine)
