@@ -66,6 +66,7 @@ def create_standart_tables():
 
 def initialization(app):
     db.init_app(app)
+    create_standart_tables()
 
 def create_results_table(table_name, elements):
     columns = [
