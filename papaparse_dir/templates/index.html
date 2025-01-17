@@ -12,26 +12,63 @@
         <header>
             <h1>Papapa_rseMaster</h1>
             <button class="auth-button" onclick="openAuthModal()">Auth</button>
-            <button type="button" class="auth-button" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Launch demo modal
-            </button>
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <button type="button" class="auth-button" data-bs-toggle="modal" data-bs-target="#authModal"> Sign In / Sign Up </button>
+            <div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        ...
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
-                    </div>
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="authModalLabel">Papapa_rseMaster</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="nav nav-tabs" id="authTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">
+                                        Sign In
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">
+                                        Sign Up
+                                    </button>
+                                </li>
+                            </ul>
+                            <div class="tab-content mt-3" id="authTabsContent">
+                                <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+                                    <form>
+                                        <div class="mb-3">
+                                            <label for="loginUser" class="form-label">Username</label>
+                                            <input type="username" class="form-control" id="loginUser" placeholder="user1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="loginPassword" class="form-label">Password</label>
+                                            <input type="password" class="form-control" id="loginPassword" placeholder="****">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">Войти</button>
+                                    </form>
+                                </div>
+                                <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+                                    <form>
+                                        <div class="mb-3">
+                                            <label for="registerUser" class="form-label">Username</label>
+                                            <input type="username" class="form-control" id="registerUser" placeholder="user1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="registerEmail" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="registerEmail" placeholder="email_example@gmail.com">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="registerPassword" class="form-label">Password</label>
+                                            <input type="password" class="form-control" id="registerPassword" placeholder="****">
+                                        </div>
+                                        <button type="submit" class="btn btn-success w-100">Зарегистрироваться</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </div>            
         </header>
         
         <form id="task-form">

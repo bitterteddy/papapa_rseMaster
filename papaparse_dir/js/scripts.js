@@ -1,46 +1,53 @@
 function showFieldsByType() {
-    const taskType = document.getElementById("task-type").value;
-    document.getElementById("css-fields").classList.add("hidden");
-    document.getElementById("regex-fields").classList.add("hidden");
-
-    if (taskType === "parse") {
-        document.getElementById("css-fields").classList.remove("hidden");
-    } else if (taskType === "regex_parse") {
-        document.getElementById("regex-fields").classList.remove("hidden");
-    }
+    const taskType = document.getElementById('task-type').value;
+    document.getElementById('css-fields').classList.toggle('d-none', taskType !== 'parse');
+    document.getElementById('regex-fields').classList.toggle('d-none', taskType !== 'regex_parse');
 }
 
 function addCSSField() {
-    const container = document.getElementById("css-parameters-container");
-    const newField = document.createElement("div");
-    newField.className = "parameter-group";
-    newField.innerHTML = `
-        <label>Name:</label>
-        <input type="text" name="name" placeholder="Name">
-        <label>Selector:</label>
-        <input type="text" name="selector" placeholder="CSS Selector">
-        <label>Attribute:</label>
-        <select name="attribute">
-            <option value="text">Text</option>
-            <option value="href">Href</option>
-            <option value="src">Src</option>
-            <option value="alt">Alt</option>
-            <option value="title">Title</option>
-            <option value="id">ID</option>
-            <option value="class">Class</option>
-            <option value="">None</option>
-        </select>
-        <label>Multiple:</label>
-        <input type="checkbox" name="multiple">
+    const container = document.getElementById('css-parameters-container');
+    const field = `
+        <div class="parameter-group mb-3">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Name:</label>
+                    <input type="text" name="name" class="form-control" placeholder="Name">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Selector:</label>
+                    <input type="text" name="selector" class="form-control" placeholder="CSS Selector">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Attribute:</label>
+                    <select name="attribute" class="form-select">
+                        <option value="text">Text</option>
+                        <option value="href">Href</option>
+                        <option value="src">Src</option>
+                        <option value="alt">Alt</option>
+                        <option value="title">Title</option>
+                        <option value="id">ID</option>
+                        <option value="class">Class</option>
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mt-2">
+                    <label class="form-label">Multiple:</label>
+                    <input type="checkbox" name="multiple" class="form-check-input ms-2">
+                </div>
+            </div>
+        </div>
     `;
-    container.appendChild(newField);
+    container.insertAdjacentHTML('beforeend', field);
 }
 
 function addRegexPattern() {
-    const container = document.getElementById("regex-patterns");
-    const inputDiv = document.createElement("div");
-    inputDiv.innerHTML = '<input type="text" placeholder="Enter regex pattern" name="regex_pattern">';
-    container.appendChild(inputDiv);
+    const container = document.getElementById('regex-patterns');
+    const field = `
+        <div class="input-group mb-2">
+            <input type="text" class="form-control" placeholder="Enter regex pattern" name="regex_pattern">
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', field);
 }
 
 async function submitTask() {
