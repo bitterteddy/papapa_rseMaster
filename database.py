@@ -1,5 +1,4 @@
-
-from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey
+from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update
 from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
 from flask_sqlalchemy import SQLAlchemy
 import json
@@ -94,4 +93,10 @@ def insert_parsing_results(table_name, results):
 
     with db.engine.connect() as conn:
         conn.execute(table.insert().values(insert_values))
+        conn.commit()
+
+def update_table(table, updates: dict):
+    com = update(table).where(table.c.id == table.id).values(updates)
+    with db.engine.connect as conn:
+        conn. execute(com)
         conn.commit()
