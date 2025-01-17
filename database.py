@@ -1,5 +1,5 @@
-from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update
-from sqlalchemy.orm import DeclarativeBase, relationship, Mapped, mapped_column
+from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update, insert
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 from flask_sqlalchemy import SQLAlchemy
 import json
 from task import Task
@@ -7,10 +7,8 @@ from task import Task
 db = SQLAlchemy()
 metadata = MetaData()
 
-class Base(DeclarativeBase):
-    pass
 
-class User(db.Model, Base):
+class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
@@ -30,7 +28,7 @@ class User(db.Model, Base):
     def __repr__(self) -> str:
         return '<User %r>' % self.name
 
-class TaskModel(db.Model, Base):
+class TaskModel(db.Model):
     __tablename__ = 'tasks'
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(120), nullable=False)
@@ -85,18 +83,19 @@ def create_results_table(table_name, elements):
 
 def insert_parsing_results(table_name, results):
     table = Table(table_name, metadata, autoload_with=db.engine)
-
     insert_values = [
         {key: (",".join(value) if isinstance(value, list) else value) for key, value in result.items()}
         for result in results
     ]
-
-    with db.engine.connect() as conn:
-        conn.execute(table.insert().values(insert_values))
-        conn.commit()
+    exequte_command(table.insert().values(insert_values))
 
 def update_table(table, updates: dict):
-    com = update(table).where(table.c.id == table.id).values(updates)
+    exequte_command(update(table).where(table.c.id == table.id).values(updates))
+
+def insert_to_table(table, vals: dict):
+    exequte_command(insert(table).values(vals))
+
+def exequte_command(com):
     with db.engine.connect as conn:
-        conn. execute(com)
+        conn.execute(com)
         conn.commit()

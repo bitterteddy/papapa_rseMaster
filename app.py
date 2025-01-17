@@ -4,7 +4,7 @@ from parser_methods.soup_parser import SoupParser
 from parser_methods.regex_parser import RegexParser
 from concurrent.futures import ThreadPoolExecutor
 from sqlalchemy.exc import SQLAlchemyError
-from database import initialization, create_results_table, insert_parsing_results, update_table
+from database import initialization, create_results_table, insert_parsing_results, update_table, insert_to_table
 from database import User, TaskModel
 import threading
 import os
@@ -97,9 +97,10 @@ def create_task():
         if not task_type or not isinstance(parameters, dict):
             return jsonify({"error": "Invalid input"}), 400
 
-        task_model = TaskModel(task_type=task_type, parameters=json.dumps(parameters), status="created")
+        pars=json.dumps(parameters)
+        task_model = TaskModel(task_type=task_type, parameters=pars, status="created")
 
-        ######
+        insert_to_table(task_model, {"task_type": task_type, "parameters": pars, "status":"created"})
 
         return jsonify({"message": "Task created"})
     except Exception as e:
