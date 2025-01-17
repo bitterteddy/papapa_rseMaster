@@ -1,22 +1,203 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
+    background-color: #2d2f33;
+    color: #fff;
     margin: 0;
     padding: 20px;
 }
 
 .container {
-    max-width: 800px;
-    margin: 0 auto;
+    margin: 20 auto;
     padding: 20px;
-    background: #fff;
+    background: #3b3e44;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
+    position: relative;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 2.2rem;
+    color: #f4e1a6;
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
 }
 
 h1, h2 {
     text-align: center;
+}
+
+.auth-button {
+    margin-left: auto;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+}
+
+.auth-button:hover {
+    background-color: #555;
+}
+
+h2 {
+    margin-top: 30px;
+    font-size: 1.6rem;
+}
+
+ul#tasks-list {
+    list-style: none;
+    padding: 0;
+}
+
+ul#tasks-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #4b4f56;
+}
+
+ul#tasks-list li .task-actions button {
+    margin-left: 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+ul#tasks-list li .task-actions button.start {
+    background-color: #28a745;
+    color: white;
+}
+
+ul#tasks-list li .task-actions button.stop {
+    background-color: #ffc107;
+    color: white;
+}
+
+ul#tasks-list li .task-actions button.view {
+    background-color: #17a2b8;
+    color: white;
+}
+
+ul#tasks-list li .task-actions button:hover {
+    opacity: 0.8;
+}
+
+button#add-task {
+    position: absolute;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #ff4757;
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+button#add-task:hover {
+    background-color: #e84141;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #3b3e44;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+.close-modal:hover {
+    color: #ff4757;
+}
+
+.auth-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-modal-content {
+    background: #3b3e44;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.auth-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.auth-modal-header h3 {
+    margin: 0;
+}
+
+.auth-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+.auth-close-modal:hover {
+    color: #ff4757;
 }
 
 form {
