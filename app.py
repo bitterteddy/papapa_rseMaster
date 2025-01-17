@@ -8,12 +8,11 @@ import os
 from sqlalchemy.exc import SQLAlchemyError
 from database import initialization, create_results_table, insert_parsing_results
 
-app = Flask(__name__, static_folder="papaparse_dir", template_folder="papaparse_dir")
+app = Flask(__name__, static_folder="papaparse_dir", template_folder="papaparse_dir/templates")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dynamic_parsing.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 initialization(app)
-
 
 tasks = {}
 task_id_counter = 1
@@ -27,60 +26,62 @@ def generate_task_id():
         task_id_counter += 1
     return task_id
 
-
 def run_task(task):
     try:
         task.start()
         if task.type == "parse":
             parser = SoupParser()
             urls = task.parameters.get("urls", [])
+            container_selector = task.parameters.get("container_selector")  
             parse_parameters = task.parameters.get("parse_parameters", {})
 
             all_results = []
-            with executor as pool:
-                futures = [pool.submit(parser.parse, url, parse_parameters) for url in urls]
+            print(f"Parsing URLs: {urls}")
+            for url in urls:
+                if task.is_stopped():
+                    break
+                if task.is_paused():
+                    continue 
 
-                for future in futures:
-                    try:
-                        result = future.result()
-                        all_results.extend(result)
-                    except Exception as e:
-                        print(f"Error processing a page: {e}")
-
-            task.complete(all_results)
+                print(f"Parsing URL: {url}")
+                result = parser.parse(url, parse_parameters)
+                print(f"Parsed result: {result}")
+                all_results.extend(result)
+            
+            if not task.is_stopped():
+                task.complete(all_results)
         elif task.type == "regex_parse":
             parser = RegexParser()
             urls = task.parameters.get("urls", [])
             regex_parameters = task.parameters.get("regex_patterns", [])
 
             all_results = []
-            with executor as pool:
-                futures = [pool.submit(parser.parse, url, {"regex_patterns": regex_parameters}) for url in urls]
+            for url in urls:
+                if task.is_stopped():
+                    break
+                if task.is_paused():
+                    continue
+                result = parser.parse(url, {"regex_patterns": regex_parameters})
+                all_results.extend(result)
 
-                for future in futures:
-                    try:
-                        result = future.result()
-                        all_results.extend(result)
-                    except Exception as e:
-                        print(f"Error processing regex parsing: {e}")
-
-            task.complete(all_results)
+            if not task.is_stopped():
+                task.complete(all_results)
         else:
             task.fail(f"Unknown task type: {task.type}")
     except Exception as e:
         task.fail(f"Error: {str(e)}")
 
-
 @app.route("/")
 def index():
     return render_template("index.html")
-
 
 @app.route('/tasks', methods=['POST'])
 def create_task():
     data = request.json
     task_type = data.get('task_type')
     parameters = data.get('parameters', {})
+
+    print(parameters)
 
     if not task_type or not isinstance(parameters, dict):
         return jsonify({"error": "Invalid input"}), 400
@@ -92,6 +93,44 @@ def create_task():
     threading.Thread(target=run_task, args=(task,)).start()
 
     return jsonify({"message": "Task created", "task_id": task_id})
+
+@app.route('/tasks/<task_id>/start', methods=['POST'])
+def start_task(task_id):
+    task = tasks.get(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+    
+    if task.is_paused() or task.is_stopped():
+        task._paused = False  
+        task._stopped = False
+        threading.Thread(target=run_task, args=(task,)).start()
+        return jsonify({"message": f"Task {task_id} resumed and started."})
+
+    return jsonify({"error": "Task is already running."}), 400
+
+@app.route('/tasks/<task_id>/pause', methods=['POST'])
+def pause_task(task_id):
+    task = tasks.get(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+    
+    if task.is_paused() or task.is_stopped():
+        return jsonify({"error": f"Task {task_id} is already paused or stopped."}), 400
+    
+    task._paused = True
+    return jsonify({"error": f"Task {task_id} is paused."}), 400
+
+@app.route('/tasks/<task_id>/stop', methods=['POST'])
+def stop_task(task_id):
+    task = tasks.get(task_id)
+    if not task:
+        return jsonify({"error": "Task not found"}), 404
+
+    if task.is_stopped():
+        return jsonify({"error": "Task {task_id} is already stopped."}), 400
+
+    task._stopped = True
+    return jsonify({"message": f"Task {task_id} stopped."})
 
 
 @app.route('/tasks/<task_id>', methods=['GET'])
@@ -109,9 +148,6 @@ def get_all_tasks():
 
 @app.route('/parse_and_store', methods=['POST'])
 def parse_and_store():
-    """
-    Эндпоинт для выполнения парсинга и создания таблицы с результатами.
-    """
     data = request.json
 
     table_name = f"parsed_results_{data.get('task_id')}"
@@ -122,10 +158,8 @@ def parse_and_store():
         return jsonify({"error": "Invalid input. 'elements' and 'results' are required."}), 400
 
     try:
-        # Создаем таблицу
         create_results_table(table_name, elements)
 
-        # Записываем результаты
         insert_parsing_results(table_name, results)
 
         return jsonify({"message": f"Results stored in table '{table_name}'"}), 201

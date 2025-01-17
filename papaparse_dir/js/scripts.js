@@ -11,7 +11,7 @@ function showFieldsByType() {
 }
 
 function addCSSField() {
-    const container = document.getElementById("parameters-container");
+    const container = document.getElementById("css-parameters-container");
     const newField = document.createElement("div");
     newField.className = "parameter-group";
     newField.innerHTML = `
@@ -49,14 +49,18 @@ async function submitTask() {
     let parameters = {};
 
     if (taskType === "parse") {
-        const fields = document.querySelectorAll("#css-parameter-fields .field-group");
+        const container_selector = document.getElementById("container-selector").value
+        const fields = document.querySelectorAll("#css-parameters-container .parameter-group");
         const elements = Array.from(fields).map(field => ({
             name: field.querySelector("input[name='name']").value,
             selector: field.querySelector("input[name='selector']").value,
             attribute: field.querySelector("select[name='attribute']").value,
             multiple: field.querySelector("input[name='multiple']").checked
         }));
-        parameters.parse_parameters = { elements };
+        parameters.parse_parameters = { 
+            container_selector: container_selector,
+            elements 
+        };
     } else if (taskType === "regex_parse") {
         const regexFields = document.querySelectorAll("#regex-fields input[name='regex_pattern']");
         const regexPatterns = Array.from(regexFields).map(input => input.value);
