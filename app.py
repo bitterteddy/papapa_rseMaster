@@ -90,6 +90,11 @@ def index():
 @app.route('/tasks', methods=['POST'])
 def create_task():
     try:
+        user = User.query.get(1)
+        if not user:
+            user = User(name="John Doe", mail="johndoe@example.com", pswrd="password123")
+            insert_to_table(app, user)
+
         data = request.json
         task_type = data.get('task_type')
         parameters = data.get('parameters', {})
@@ -98,7 +103,7 @@ def create_task():
             return jsonify({"error": "Invalid input"}), 400
 
         pars=json.dumps(parameters)
-        task_model = TaskModel(task_type=task_type, parameters=pars, status="created")
+        task_model = TaskModel(user=user, task_type=task_type, parameters=pars, status="created")
 
         insert_to_table(app, task_model)
 

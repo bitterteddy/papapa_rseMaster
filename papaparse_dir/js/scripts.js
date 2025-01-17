@@ -85,56 +85,56 @@ async function submitTask() {
 
     const result = await response.json();
     alert(result.message);
-    loadTasks();
+    // loadTasks();
 }
 
-async function loadTasks() {
-    const response = await fetch("/tasks");
-    const tasks = await response.json();
-    const taskList = document.getElementById("task-list");
-    taskList.innerHTML = "";
-    for (const [taskId, task] of Object.entries(tasks)) {
-        const li = document.createElement("li");
-        li.textContent = `Task ${taskId}: ${task.status}`;
-        taskList.appendChild(li);
-    }
-}
+// async function loadTasks() {
+//     const response = await fetch("/tasks");
+//     const tasks = await response.json();
+//     const taskList = document.getElementById("task-list");
+//     taskList.innerHTML = "";
+//     for (const [taskId, task] of Object.entries(tasks)) {
+//         const li = document.createElement("li");
+//         li.textContent = `Task ${taskId}: ${task.status}`;
+//         taskList.appendChild(li);
+//     }
+// }
 
-async function loadTasks() {
-    const response = await fetch('/tasks');
-    const tasks = await response.json();
+// async function loadTasks() {
+//     const response = await fetch('/tasks');
+//     const tasks = await response.json();
 
-    const tasksList = document.getElementById('tasks-list');
-    tasksList.innerHTML = '';
+//     const tasksList = document.getElementById('tasks-list');
+//     tasksList.innerHTML = '';
 
-    for (const taskId in tasks) {
-        const task = tasks[taskId];
-        const li = document.createElement('li');
-        li.innerHTML = `
-            Task ${task.task_id}: ${task.status} 
-            <button onclick="viewTaskDetails('${task.task_id}')">View Details</button>
-        `;
-        tasksList.appendChild(li);
-    }
-}
+//     for (const taskId in tasks) {
+//         const task = tasks[taskId];
+//         const li = document.createElement('li');
+//         li.innerHTML = `
+//             Task ${task.task_id}: ${task.status} 
+//             <button onclick="viewTaskDetails('${task.task_id}')">View Details</button>
+//         `;
+//         tasksList.appendChild(li);
+//     }
+// }
 
-async function viewTaskDetails(taskId) {
-    const response = await fetch(`/tasks/${taskId}`);
-    if (response.ok) {
-        const task = await response.json();
-        const taskDetails = document.getElementById('task-details');
-        const content = document.getElementById('task-details-content');
+// async function viewTaskDetails(taskId) {
+//     const response = await fetch(`/tasks/${taskId}`);
+//     if (response.ok) {
+//         const task = await response.json();
+//         const taskDetails = document.getElementById('task-details');
+//         const content = document.getElementById('task-details-content');
         
-        content.textContent = JSON.stringify(task, null, 2);
+//         content.textContent = JSON.stringify(task, null, 2);
         
-        taskDetails.style.display = 'block';
-    } else {
-        alert('Task not found!');
-    }
-}
+//         taskDetails.style.display = 'block';
+//     } else {
+//         alert('Task not found!');
+//     }
+// }
 
-document.getElementById('close-details').addEventListener('click', () => {
-    document.getElementById('task-details').style.display = 'none';
-});
+// document.getElementById('close-details').addEventListener('click', () => {
+//     document.getElementById('task-details').style.display = 'none';
+// });
 
 loadTasks();

@@ -45,8 +45,8 @@ class TaskModel(db.Model):
         back_populates="tasks",
     )
     
-    def __init__(self, task_id: int, user: User, status: str, task_type: str, parameters: str, err_msg: str = "") -> None:
-        self.id = task_id
+    def __init__(self, user: User, status: str, task_type: str, parameters: str, err_msg: str = "") -> None:
+        # self.id = task_id
         self.status = status
         self.task_type = task_type
         self.parameters = parameters
@@ -57,17 +57,20 @@ class TaskModel(db.Model):
     @classmethod
     def from_task_and_user(cls, task:Task, user:User):
         pars = json.dumps(task.parameters)
-        return cls(task.task_id, user, task.status, task.type, pars, task.error_message)
+        # return cls(task.task_id, user, task.status, task.type, pars, task.error_message)
+        return cls(user, task.status, task.type, pars, task.error_message)
     
     def __repr__(self) -> str:
         return '<Task %r>' % self.id
  
-def create_standart_tables():
-    metadata.create_all(bind=db.engine)
+def create_standart_tables(app):
+    with app.app_context():
+        # metadata.create_all(bind=db.engine)
+        db.create_all()
 
 def initialization(app):
     db.init_app(app)
-    create_standart_tables()
+    create_standart_tables(app)
 
 def create_results_table(table_name, elements):
     columns = [
@@ -89,10 +92,10 @@ def insert_parsing_results(table_name, results):
         {key: (",".join(value) if isinstance(value, list) else value) for key, value in result.items()}
         for result in results
     ]
-    exequte_command(table.insert().values(insert_values))
+    execute_command(table.insert().values(insert_values))
 
 def update_table(table, updates: dict):
-    exequte_command(update(table).where(table.c.id == table.id).values(updates))
+    execute_command(update(table).where(table.c.id == table.id).values(updates))
 
 def insert_to_table(app, item):
     with app.app_context():
@@ -101,11 +104,11 @@ def insert_to_table(app, item):
         try:
             session.add(item)
             session.commit()
-        except:
-            print("Unable to add"+item)
+        except Exception as e:
+            print(f"Unable to add {item}: {e}")
         session.close()
 
-def exequte_command(com):
+def execute_command(com):
     with db.engine.connect as conn:
         conn.execute(com)
         conn.commit()
