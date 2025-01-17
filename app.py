@@ -100,7 +100,7 @@ def create_task():
         pars=json.dumps(parameters)
         task_model = TaskModel(task_type=task_type, parameters=pars, status="created")
 
-        insert_to_table(task_model, {"task_type": task_type, "parameters": pars, "status":"created"})
+        insert_to_table(app, task_model)
 
         return jsonify({"message": "Task created"})
     except Exception as e:

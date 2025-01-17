@@ -1,5 +1,6 @@
 from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update, insert
 from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 import json
 from task import Task
@@ -93,8 +94,16 @@ def insert_parsing_results(table_name, results):
 def update_table(table, updates: dict):
     exequte_command(update(table).where(table.c.id == table.id).values(updates))
 
-def insert_to_table(table, vals: dict):
-    exequte_command(insert(table).values(vals))
+def insert_to_table(app, item):
+    with app.app_context():
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        try:
+            session.add(item)
+            session.commit()
+        except:
+            print("Unable to add"+item)
+        session.close()
 
 def exequte_command(com):
     with db.engine.connect as conn:
