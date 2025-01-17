@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update, insert
+from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update, insert, select
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
@@ -112,3 +112,27 @@ def execute_command(com):
     with db.engine.connect as conn:
         conn.execute(com)
         conn.commit()
+        
+def get_all_tasks(app):
+    with app.app_context():
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        try:
+            tasks = session.scalars(select(TaskModel)).all()
+            session.close()
+            return tasks
+        except:
+            session.close()
+            return []
+        
+def get_task_by_id(app, id):
+    with app.app_context():
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        try:
+            task = session.scalars(select(TaskModel).where(TaskModel.id == id)).one()
+            session.close()
+            return task
+        except:
+            session.close()
+            return None
