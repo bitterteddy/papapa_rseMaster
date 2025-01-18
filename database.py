@@ -1,3 +1,4 @@
+from flask import jsonify
 from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update, insert, select
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.orm import sessionmaker
@@ -15,11 +16,7 @@ class User(db.Model):
     username = db.Column(db.String(50), nullable=False, unique=True)
     email = db.Column(db.String(120), nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    tasks: Mapped[list["TaskModel"]] = relationship(
-        "TaskModel",
-        back_populates="user",
-        cascade="all, delete",
-    )
+    tasks = db.relationship("TaskModel", back_populates="user")
     
     def __init__(self, name, mail, pswrd) -> None:
         self.username = name
@@ -36,14 +33,8 @@ class TaskModel(db.Model):
     task_type = db.Column(db.String(120), nullable=False)
     parameters = db.Column(db.Text, nullable=False)
     error_message = db.Column(db.Text, nullable=True)
-    user_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("users.id"),
-    )
-    user: Mapped[User] = relationship(
-        "User",
-        back_populates="tasks",
-    )
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    user = db.relationship("User", back_populates="tasks")
 
     def to_dict(self):
         return {
@@ -59,7 +50,7 @@ class TaskModel(db.Model):
         # self.id = task_id
         self.status = status
         self.task_type = task_type
-        self.parameters = parameters
+        self.parameters = json.dumps(parameters)
         self.error_message = err_msg
         self.user_id = user.id
         self.user = user
@@ -67,7 +58,6 @@ class TaskModel(db.Model):
     @classmethod
     def from_task_and_user(cls, task:Task, user:User):
         pars = json.dumps(task.parameters)
-        # return cls(task.task_id, user, task.status, task.type, pars, task.error_message)
         return cls(user, task.status, task.type, pars, task.error_message)
     
     def __repr__(self) -> str:
@@ -75,7 +65,6 @@ class TaskModel(db.Model):
  
 def create_standart_tables(app):
     with app.app_context():
-        # metadata.create_all(bind=db.engine)
         db.create_all()
 
 def initialization(app):
@@ -125,9 +114,10 @@ def insert_to_table(app, item):
         try:
             session.add(item)
             session.commit()
-            print(f"Task with ID {item.id} was created successfully.")  # Логирование
+            print(f"Task with ID {item.id} was created successfully.")
+            print(item.to_dict())
         except Exception as e:
-            session.rollback()  # В случае ошибки откатываем изменения
+            session.rollback()
             print(f"Error inserting task: {str(e)}")
         finally:
             session.close()
@@ -138,25 +128,66 @@ def execute_command(com):
         conn.execute(com)
         conn.commit()
         
-def get_all_tasks():
-    Session = sessionmaker(bind=db.engine)
-    session = Session()
-    try:
-        tasks = session.scalars(select(TaskModel)).all() 
-        session.close()
-        print(f"Retrieved tasks from database: {tasks}")  
-        return tasks  
-    except Exception as e:
-        session.close()
-        print(f"Error fetching tasks: {str(e)}")
-        return []  
+# def get_all_tasks(app):
+#     with app.app_context():
+#         Session = sessionmaker(bind=db.engine)
+#         session = Session()
+#         try:
+#             tasks = session.scalars(select(TaskModel)).all()
+#             session.close()
+#             print([{'id': task.id,
+#                 'status': task.status,
+#                 'task_type': task.task_type,
+#                 'parameters': task.parameters,
+#                 'error_message': task.error_message
+#                 } for task in tasks])
+#         except Exception as e:
+#             session.close()
+#             print(e)
+
+def get_all_tasks(app):
+    result = []
+    with app.app_context():
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        try:
+            tasks = session.scalars(select(TaskModel)).all()
+            session.close()
+            result = [{'id': task.id,
+                'status': task.status,
+                'task_type': task.task_type,
+                'parameters': task.parameters,
+                'error_message': task.error_message
+                } for task in tasks]
+        except Exception as e:
+            session.close()
+            print(e)
+    return result
         
 def get_task_by_id(app, id):
+    result = {}
     with app.app_context():
         Session = sessionmaker(bind=db.engine)
         session = Session()
         try:
             task = session.scalars(select(TaskModel).where(TaskModel.id == id)).one_or_none()
+            session.close()
+            result = {'id': task.id,
+                'status': task.status,
+                'task_type': task.task_type,
+                'parameters': task.parameters,
+                'error_message': task.error_message}
+        except Exception as e:
+            session.close()
+            print(e)
+    return result    
+        
+def get_user_by_id(app, id):
+    with app.app_context():
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        try:
+            task = session.scalars(select(User).where(User.id == id)).one_or_none()
             session.close()
             return task
         except:
