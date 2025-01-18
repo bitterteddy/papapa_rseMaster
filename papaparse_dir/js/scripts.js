@@ -136,7 +136,7 @@ async function loadTasks() {
 window.onload = loadTasks;
 
 function viewTaskDetails(taskId) {
-    fetch('http://127.0.0.1:5000/task/${taskId}')
+    fetch(`http://127.0.0.1:5000/task/${taskId}`)
       .then(response => {
         if (!response.ok) {
           throw new Error('Task not found');
