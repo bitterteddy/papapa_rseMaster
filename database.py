@@ -93,8 +93,18 @@ def insert_parsing_results(table_name, results):
     ]
     execute_command(table.insert().values(insert_values))
 
-def update_table(table, updates: dict):
-    execute_command(update(table).where(table.c.id == table.id).values(updates))
+def update_table(app, id, updates: dict):
+    with app.app_context():
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        try:
+            session.execute(update(TaskModel).where(TaskModel.id == id).values(updates))
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            print(f"Error updating task: {str(e)}")
+        finally:
+            session.close()
 
 # def insert_to_table(app, item):
 #     with app.app_context():

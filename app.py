@@ -111,15 +111,16 @@ def create_task():
 def start_task(task_id):
     try: 
         with app.app_context():
-            task_model = task_model = TaskModel.query.get(task_id)
-            if not task_model:
+            task = get_task_by_id(app, task_id)
+            #task_model = task_model = TaskModel.query.get(task_id)
+            if not task:
                 return jsonify({"error": "Task not found"}), 404
             
-            if task_model.status not in ["stopped", "paused"]:
+            if task["status"] not in ["stopped", "paused"]:
                 return jsonify({"error": f"Task {task_id} cannot be started."}), 400
             
-            update_table(task_model, {"status": "in progres..."})
-        
+            update_table(app, task["id"], {"status": "in progres..."})
+        #ToDo: Is task_model really irreplaceable
         threading.Thread(target=run_task, args=(task_model,)).start()
         
         return jsonify({"message": f"Task {task_id} started."})
