@@ -114,7 +114,7 @@ async function loadTasks() {
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <pre id="task-details"></pre> <!-- Здесь будут отображаться данные задачи -->
+                                <pre id="task-details"></pre>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -136,7 +136,7 @@ async function loadTasks() {
 window.onload = loadTasks;
 
 function viewTaskDetails(taskId) {
-    fetch(`http://127.0.0.1:5000/task/${taskId}`)
+    fetch('http://127.0.0.1:5000/task/${taskId}')
       .then(response => {
         if (!response.ok) {
           throw new Error('Task not found');
@@ -152,56 +152,27 @@ function viewTaskDetails(taskId) {
         const taskDetails = document.getElementById('task-details');
         taskDetails.textContent = `Error: ${error.message}`;
       });
-  }
+}
 
-  
-// async function loadTasks() {
-//     const response = await fetch("/tasks");
-//     const tasks = await response.json();
-//     const taskList = document.getElementById("task-list");
-//     taskList.innerHTML = "";
-//     for (const [taskId, task] of Object.entries(tasks)) {
-//         const li = document.createElement("li");
-//         li.textContent = `Task ${taskId}: ${task.status}`;
-//         taskList.appendChild(li);
-//     }
-// }
+function startTask(taskId) {
+    fetch(`/tasks/${taskId}/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.error) {
+          alert(`Error: ${data.error}`);
+        } else {
+          alert(`Success: ${data.message}`);
+        }
+      })
+      .catch(error => {
+        alert(`Unexpected error: ${error.message}`);
+      });
+}
 
-// async function loadTasks() {
-//     const response = await fetch('/tasks');
-//     const tasks = await response.json();
-
-//     const tasksList = document.getElementById('tasks-list');
-//     tasksList.innerHTML = '';
-
-//     for (const taskId in tasks) {
-//         const task = tasks[taskId];
-//         const li = document.createElement('li');
-//         li.innerHTML = `
-//             Task ${task.task_id}: ${task.status} 
-//             <button onclick="viewTaskDetails('${task.task_id}')">View Details</button>
-//         `;
-//         tasksList.appendChild(li);
-//     }
-// }
-
-// async function viewTaskDetails(taskId) {
-//     const response = await fetch(`/tasks/${taskId}`);
-//     if (response.ok) {
-//         const task = await response.json();
-//         const taskDetails = document.getElementById('task-details');
-//         const content = document.getElementById('task-details-content');
-        
-//         content.textContent = JSON.stringify(task, null, 2);
-        
-//         taskDetails.style.display = 'block';
-//     } else {
-//         alert('Task not found!');
-//     }
-// }
-
-// document.getElementById('close-details').addEventListener('click', () => {
-//     document.getElementById('task-details').style.display = 'none';
-// });
 
 loadTasks();
