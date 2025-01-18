@@ -1,5 +1,5 @@
 from flask import jsonify
-from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update, insert, select
+from sqlalchemy import Table, Column, String, Integer, Text, Boolean, MetaData, ForeignKey, update, insert, select, text
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
@@ -203,3 +203,18 @@ def get_user_by_id(app, id):
         except:
             session.close()
             return None
+
+def get_task_results_by_tablename(app, tablename):
+    query="select * from "+tablename
+    result = []
+    with app.app_context():
+        Session = sessionmaker(bind=db.engine)
+        session = Session()
+        try:
+            rows = session.execute(text(query)).all()
+            result = [row._asdict() for row in rows]
+        except Exception as e:
+            print(e)
+        finally:
+            session.close()
+    return result
