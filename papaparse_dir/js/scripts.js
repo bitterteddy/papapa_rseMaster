@@ -103,11 +103,30 @@ async function loadTasks() {
                 <div class="task-actions">
                     <button class="start" onclick="startTask(${task.id})">Start</button>
                     <button class="stop" onclick="stopTask(${task.id})">Stop</button>
-                    <button class="view" onclick="viewTaskDetails(${task.id})">View Details</button>
+                    <button class="view" onclick="viewTaskDetails(${task.id})" data-bs-toggle="modal" data-bs-target="#viewModal">View Details</button>
+                    
+                    <div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                             <span>Task ${task.id}: ${task.status}</span>
+                            <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="taskModalLabel">Task ${task.id} Details</
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <pre id="task-details"></pre> <!-- Здесь будут отображаться данные задачи -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <button class="view" onclick="viewTaskResult(${task.id})">View Result</button>
                 </div>
             `;
-            tasksList.appendChild(li);  // Добавляем задачу в список
+            tasksList.appendChild(li); 
         });
     } catch (error) {
         console.error('Error fetching tasks:', error);
@@ -116,6 +135,26 @@ async function loadTasks() {
 
 window.onload = loadTasks;
 
+function viewTaskDetails(taskId) {
+    fetch(`http://127.0.0.1:5000/task/${taskId}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Task not found');
+        }
+        return response.json();
+      })
+      .then(task => {
+        const taskDetails = document.getElementById('task-details');
+  
+        taskDetails.textContent = JSON.stringify(task, null, 2);
+      })
+      .catch(error => {
+        const taskDetails = document.getElementById('task-details');
+        taskDetails.textContent = `Error: ${error.message}`;
+      });
+  }
+
+  
 // async function loadTasks() {
 //     const response = await fetch("/tasks");
 //     const tasks = await response.json();
