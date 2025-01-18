@@ -88,6 +88,34 @@ async function submitTask() {
     // loadTasks();
 }
 
+async function loadTasks() {
+    try {
+        const response = await fetch('/tasks');  
+        const tasks = await response.json();  
+
+        const tasksList = document.getElementById('tasks-list');
+        tasksList.innerHTML = '';  
+
+        tasks.forEach(task => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <span>Task ${task.id}: ${task.status}</span>
+                <div class="task-actions">
+                    <button class="start" onclick="startTask(${task.id})">Start</button>
+                    <button class="stop" onclick="stopTask(${task.id})">Stop</button>
+                    <button class="view" onclick="viewTaskDetails(${task.id})">View Details</button>
+                    <button class="view" onclick="viewTaskResult(${task.id})">View Result</button>
+                </div>
+            `;
+            tasksList.appendChild(li);  // Добавляем задачу в список
+        });
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+    }
+}
+
+window.onload = loadTasks;
+
 // async function loadTasks() {
 //     const response = await fetch("/tasks");
 //     const tasks = await response.json();

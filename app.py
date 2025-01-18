@@ -4,7 +4,7 @@ from parser_methods.soup_parser import SoupParser
 from parser_methods.regex_parser import RegexParser
 from concurrent.futures import ThreadPoolExecutor
 from sqlalchemy.exc import SQLAlchemyError
-from database import initialization, create_results_table, insert_parsing_results, update_table, insert_to_table
+from database import initialization, create_results_table, insert_parsing_results, update_table, insert_to_table, get_all_tasks, get_task_by_id
 from database import User, TaskModel
 import threading
 import os
@@ -90,10 +90,11 @@ def index():
 @app.route('/tasks', methods=['POST'])
 def create_task():
     try:
+        print(session.query(User))
         user = User.query.get(1)
-        if not user:
-            user = User(name="John Doe", mail="johndoe@example.com", pswrd="password123")
-            insert_to_table(app, user)
+        # if not user:
+        #     user = User(name="John Doe", mail="johndoe@example.com", pswrd="password123")
+        #     insert_to_table(app, user)
 
         data = request.json
         task_type = data.get('task_type')
@@ -155,18 +156,31 @@ def start_task(task_id):
 #     return jsonify({"message": f"Task {task_id} stopped."})
 
 
-# @app.route('/tasks/<task_id>', methods=['GET'])
-# def get_task(task_id):
-#     task = tasks.get(task_id)
-#     if task:
-#         return jsonify(task.to_dict())
-#     else:
-#         return jsonify({"error": "Task not found"}), 404
+@app.route('/tasks/<int:task_id>', methods=['GET'])
+def get_task(task_id):
+    try:
+        task = get_task_by_id(app, task_id)  # Получаем задачу по ID
+        if task:
+            return jsonify(task.to_dict())  # Возвращаем задачу как JSON
+        else:
+            return jsonify({"error": "Task not found"}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error fetching task: {str(e)}"}), 500
 
 
-# @app.route('/tasks', methods=['GET'])
-# def get_all_tasks():
-#     return jsonify({task_id: task.to_dict() for task_id, task in tasks.items()})
+@app.route('/tasks', methods=['GET'])
+def get_all_tasks():
+    try:
+        tasks = get_all_tasks() 
+        print(f"Fetched tasks: {tasks}") 
+        if isinstance(tasks, list):
+            tasks_list = [task.to_dict() for task in tasks if isinstance(task, TaskModel)] 
+            return jsonify(tasks_list)
+        else:
+            return jsonify({"message": "No tasks found"}), 404  
+    except Exception as e:
+        return jsonify({"error": f"Error fetching tasks: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
+    

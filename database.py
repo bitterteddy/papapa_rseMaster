@@ -44,6 +44,16 @@ class TaskModel(db.Model):
         "User",
         back_populates="tasks",
     )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "status": self.status,
+            "task_type": self.task_type,
+            "parameters": json.loads(self.parameters),
+            "error_message": self.error_message,
+            # "user_id": self.user_id
+        }
     
     def __init__(self, user: User, status: str, task_type: str, parameters: str, err_msg: str = "") -> None:
         # self.id = task_id
@@ -74,7 +84,7 @@ def initialization(app):
 
 def create_results_table(table_name, elements):
     columns = [
-        Column("id", Integer, primary_key=True, autoincrement=True),  # ID ñòîëáåö
+        Column("id", Integer, primary_key=True, autoincrement=True), 
     ]
 
     for element in elements:
@@ -97,6 +107,17 @@ def insert_parsing_results(table_name, results):
 def update_table(table, updates: dict):
     execute_command(update(table).where(table.c.id == table.id).values(updates))
 
+# def insert_to_table(app, item):
+#     with app.app_context():
+#         Session = sessionmaker(bind=db.engine)
+#         session = Session()
+#         try:
+#             session.add(item)
+#             session.commit()
+#         except Exception as e:
+#             print(f"Unable to add {item}: {e}")
+#         session.close()
+
 def insert_to_table(app, item):
     with app.app_context():
         Session = sessionmaker(bind=db.engine)
@@ -104,33 +125,38 @@ def insert_to_table(app, item):
         try:
             session.add(item)
             session.commit()
+            print(f"Task with ID {item.id} was created successfully.")  # Логирование
         except Exception as e:
-            print(f"Unable to add {item}: {e}")
-        session.close()
+            session.rollback()  # В случае ошибки откатываем изменения
+            print(f"Error inserting task: {str(e)}")
+        finally:
+            session.close()
+
 
 def execute_command(com):
     with db.engine.connect as conn:
         conn.execute(com)
         conn.commit()
         
-def get_all_tasks(app):
-    with app.app_context():
-        Session = sessionmaker(bind=db.engine)
-        session = Session()
-        try:
-            tasks = session.scalars(select(TaskModel)).all()
-            session.close()
-            return tasks
-        except:
-            session.close()
-            return []
+def get_all_tasks():
+    Session = sessionmaker(bind=db.engine)
+    session = Session()
+    try:
+        tasks = session.scalars(select(TaskModel)).all() 
+        session.close()
+        print(f"Retrieved tasks from database: {tasks}")  
+        return tasks  
+    except Exception as e:
+        session.close()
+        print(f"Error fetching tasks: {str(e)}")
+        return []  
         
 def get_task_by_id(app, id):
     with app.app_context():
         Session = sessionmaker(bind=db.engine)
         session = Session()
         try:
-            task = session.scalars(select(TaskModel).where(TaskModel.id == id)).one()
+            task = session.scalars(select(TaskModel).where(TaskModel.id == id)).one_or_none()
             session.close()
             return task
         except:
